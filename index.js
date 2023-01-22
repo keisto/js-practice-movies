@@ -44,6 +44,10 @@ const onInput = async (e) => {
       <img src="${imgSrc}" alt="Poster for ${movie.Title}" />
       ${movie.Title}
     `
+    movieOption.addEventListener('click', () => {
+      dropdown.classList.remove('is-active')
+      input.value = movie.Title
+    })
     fragment.append(movieOption)
   }
 
