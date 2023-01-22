@@ -1,70 +1,24 @@
-const fetchData = async (searchTerm) => {
-  const response = await axios.get('https://omdbapi.com/', {
-    params: {
-      apikey: 'e4fc7c93',
-      s: searchTerm,
-    },
-  })
-
-  return response?.data?.Search ?? []
-}
-
-const root = document.querySelector('.autocomplete')
-root.innerHTML = `
-  <label>Search for a movie</label>
-  <input class="input" />
-  <div class="dropdown">
-    <div class="dropdown-menu">
-      <div class="dropdown-content results">
-      </div>
-    </div>
-  </div>
-`
-
-const input = document.querySelector('input')
-const dropdown = document.querySelector('.dropdown')
-const resultsWrapper = document.querySelector('.results')
-
-const onInput = async (e) => {
-  const movies = await fetchData(e.target.value).then()
-
-  if (!movies.length) {
-    dropdown.classList.remove('is-active')
-    return
-  }
-
-  resultsWrapper.innerHTML = ''
-  dropdown.classList.add('is-active')
-  const fragment = document.createDocumentFragment()
-  for (const movie of movies) {
-    const movieOption = document.createElement('a')
+createAutoComplete({
+  root: document.querySelector('.autocomplete'),
+  renderOption: (movie) => {
     const imgSrc = movie.Poster === 'N/A' ? '' : movie.Poster
-    movieOption.classList.add('dropdown-item')
-    movieOption.innerHTML = `
+    return `
       <img src="${imgSrc}" alt="Poster for ${movie.Title}" />
-      ${movie.Title}
+      ${movie.Title} (${movie.Year})
     `
-
-    // Hide dropdown on movie selection
-    movieOption.addEventListener('click', () => {
-      dropdown.classList.remove('is-active')
-      input.value = movie.Title
-      onMovieSelect(movie)
+  },
+  onOptionSelect: (movie) => onMovieSelect(movie),
+  inputValue: (movie) => movie.Title,
+  fetchData: async (searchTerm) => {
+    const response = await axios.get('https://omdbapi.com/', {
+      params: {
+        apikey: 'e4fc7c93',
+        s: searchTerm,
+      },
     })
 
-    fragment.append(movieOption)
-  }
-
-  resultsWrapper.append(fragment)
-}
-
-input.addEventListener('input', debounce(onInput, 500))
-
-// Hide dropdown when clicked away from the autocomplete element
-document.addEventListener('click', (e) => {
-  if (!root.contains(e.target)) {
-    dropdown.classList.remove('is-active')
-  }
+    return response?.data?.Search ?? []
+  },
 })
 
 const onMovieSelect = async (movie) => {
