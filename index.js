@@ -44,10 +44,14 @@ const onInput = async (e) => {
       <img src="${imgSrc}" alt="Poster for ${movie.Title}" />
       ${movie.Title}
     `
+
+    // Hide dropdown on movie selection
     movieOption.addEventListener('click', () => {
       dropdown.classList.remove('is-active')
       input.value = movie.Title
+      onMovieSelect(movie)
     })
+
     fragment.append(movieOption)
   }
 
@@ -56,8 +60,19 @@ const onInput = async (e) => {
 
 input.addEventListener('input', debounce(onInput, 500))
 
+// Hide dropdown when clicked away from the autocomplete element
 document.addEventListener('click', (e) => {
   if (!root.contains(e.target)) {
     dropdown.classList.remove('is-active')
   }
 })
+
+const onMovieSelect = async (movie) => {
+  const response = await axios.get('https://omdbapi.com/', {
+    params: {
+      apikey: 'e4fc7c93',
+      i: movie.imdbID,
+    },
+  })
+  console.log(response.data)
+}
